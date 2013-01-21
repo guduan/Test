@@ -1,0 +1,1 @@
+\rm bpmoffset*.sdds qoffset*.sdds  bpmoffset*.dat qoffset*.dat

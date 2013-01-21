@@ -1,0 +1,1 @@
+\rm *all* *.acc *.te*  log*.txt *.bpm* *.quad* *.mat* *.real* *.two* *.mp* *.cx *.cor* *.diff* *.*~  *.*slope* *.proc *.orb *.dis* *.cen* *.slo* *.dp* *.mag *.test  *.orbit  *.erl *.mat *.cor *.fi* *.erl1 *.erls *.out *.p* *.s *.sig *.twi *.cenMONI *.fin *.flo *.hirm *.hrm *.mag1 *.traj *.virm *.vrm *.coeff*

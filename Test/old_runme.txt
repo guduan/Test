@@ -1,0 +1,64 @@
+#!/bin/csh -f
+
+sddsmakedataset scan.sdds \
+    -column=dp,type=double,symbol='$gd' -data=-4e-3,-3e-3,-2e-3,-1e-3,0,1e-3,2e-3,3e-3,4e-3 -ascii
+
+elegant scan.ele
+
+sddsxref scan.cen scan.fin \
+    -leave=* -transfer=parameter,MALIN.DP -rename=parameter,MALIN.DP=dp -nowarnings
+    
+set i=1
+
+while($i < 21 )
+
+    sddsprocess -pipe=out scan.cen -match=col,ElementType=MONI \
+	-filter=col,ElementOccurence,$i,$i \
+	| sddsconvert -pipe  -retain=col,Cx \
+	| sddscombine -pipe -merge \
+	| sddsxref -pipe=in scan.sdds scan-$i.dp -take=dp
+    
+    sddsconvert -ascii scan-$i.dp -nowarnings
+    
+    sddspfit scan-$i.dp scan-$i.fit2 -terms=2 -col=dp,Cx -copyParameters 
+    sddspfit scan-$i.dp scan-$i.fit3 -terms=3 -col=dp,Cx -copyParameters
+    
+    sddsslopes scan-$i.dp scan-$i.slope -independentVariable=dp -col=Cx
+
+    sddsconvert -ascii scan-$i.slope -nowarnings
+    set i = `rpnl $i 1 +`
+ end
+
+sddscombine scan-1.slope scan-2.slope scan-3.slope scan-4.slope scan-5.slope \
+scan-6.slope \
+scan-7.slope \
+scan-8.slope \
+scan-9.slope \
+scan-10.slope \
+scan-11.slope \
+scan-12.slope \
+scan-13.slope \
+scan-14.slope \
+scan-15.slope \
+scan-16.slope \
+scan-17.slope \
+scan-18.slope \
+scan-19.slope \
+scan-20.slope \
+scan-all.slope -overWrite
+
+
+sddsprocess -pipe=out scan.cen -match=col,ElementType=MONI \
+    | sddsconvert -ascii -pipe=in scan.s -retain=col,s -toPage=1
+    
+sddscombine -pipe=out scan-all.slope -merge \
+    | sddsxref -pipe=in scan.s scan.dis -take=s
+
+sddsconvert -ascii scan.dis -nowarnings
+ 
+\rm *.*~
+ \rm *.slope *.fit* *.dp *.s
+sddsplot -col=s,CxSlope scan.dis -graph=sym  \
+    -col=s,CxSlope scan.dis -graph=line,type=1 -legend=spec="Meaused Dispersion" \
+    -yLabel="Dx (m)" -xLabel=m \
+    -title="Measured Dispersion"

@@ -1,0 +1,99 @@
+#!/bin/csh -f
+set nonomatch
+
+./cleanup.txt 
+./repeat_clean.txt 
+elegant test.ele 
+
+sddsprocess  -pipe=out test.param -match=col,ElementType=QUAD -match=col,ElementParameter=K1 \
+	| sddsconvert -pipe=in -delete=col,ElementGroup quad_K1_1000MeV.sdds
+
+sddsprocess quad_K1_1000MeV.sdds -redefine=col,ParameterValue,"ParameterValue 100 * 80 /  " quad_K1_800MeV.sdds
+sddsprocess quad_K1_1000MeV.sdds -redefine=col,ParameterValue,"ParameterValue 100 * 60 /  " quad_K1_600MeV.sdds
+
+
+sddsconvert -ascii test.cor -nowarnings
+sddsconvert -ascii test.param -nowarnings
+sddsconvert -ascii test.traj -nowarnings
+
+sddsprocess  -pipe=out test.param -match=col,ElementType=KICKER \
+	| sddsconvert -pipe=in -delete=col,ElementGroup test.corr
+
+sddsprocess  -pipe=out test.param -match=col,ElementType=QUAD -match=col,ElementParameter=DX \
+	| sddsconvert -pipe=in -delete=col,ElementGroup,DX -rename=col,ParameterValue=DX  test.quadoffset.real
+
+sddsprocess  -pipe=out test.param -match=col,ElementType=MONI -match=col,ElementParameter=DX \
+	| sddsconvert -pipe=in -delete=col,ElementGroup,DX -rename=col,ParameterValue=DX  test.bpmoffset.real
+	
+sddsprocess  -pipe=out test.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,s -fromPage=1 -toPage=1 test.bpmlocation
+	
+sddsprocess  -pipe=out test.cen -match=col,ElementType=QUAD\
+	| sddsconvert -pipe=in -ascii -retain=col,s -fromPage=1 -toPage=1 test.quadlocation
+	
+sddsxref  test.bpmoffset.real  test.bpmlocation test.bpmoffset.real1 -take=s
+sddsxref  test.quadoffset.real  test.quadlocation test.quadoffset.real1 -take=s
+
+# show orbits before/after GLOBAL correction
+sddsplot -layout=1,2  \
+	-col=s,x  test.traj -graph=line,type=0 -fromPage=1 -toPage=1 -legend=spec=orbit_before_GLOBAL_correct \
+	-col=s,x  test.traj -graph=line,type=1 -fromPage=2 -toPage=2 -legend=spec=orbit_after_GLOBAL_correct -end \
+	-col=s,x  test.traj -graph=line,type=2 -fromPage=2 -toPage=2  -legend=spec=orbit_after_GLOBAL_correct \
+	-col=s,DX test.bpmoffset.real1 -graph=sym -legend=spec=BPM_OFFSET
+
+sddsmakedataset scan.sdds \
+    -column=dp,type=double,symbol='$gd' -data=-4e-3,-3e-3,-2e-3,-1e-3,0,1e-3,2e-3,3e-3,4e-3 -ascii
+	
+./measure_dispersion.txt test0 Dispersion_before_Global_correction  
+./measure_dispersion.txt test01 Dispersion_after_Global_correction  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# begin DFS iterations.
+
+#./iteration1.txt  
+#matlab -nodisplay -nodesktop -nojvm -nosplash -r  "run E:\dfs\testdfs.m"  
+##matlab  -r  "run E:\dfs\testdfs.m"  
+#while (1)
+#if (-e qoffset_new1.sdds) then
+#	break
+#else
+#	sleep 3
+#	echo "waiting for 1st correction done"
+#	continue
+#endif
+#end
+#
+#./after_iteration1.txt
+#
+#./iteration2.txt
+#matlab -nodisplay -nodesktop -nojvm -nosplash -r  "run E:\dfs\bba_correct2.m"
+##matlab  -r  "run E:\dfs\bba_correct2.m"
+#while (1)
+#if (-e qoffset_new2.sdds) then
+#	break
+#else
+#	sleep 3
+#	echo "waiting for 2nd correction done"
+#	continue
+#endif
+#end
+#
+#./after_iteration2.txt
+#
+#rm -rf *.*~

@@ -1,0 +1,75 @@
+﻿&run_setup
+        lattice = fodo.lte,
+        use_beamline = bl,
+        final = %s.fin,
+        centroid = %s.cen,
+        p_central = 880,
+		magnets=%s.mag
+		parameters = %s.param
+		always_change_p0 =1
+		random_number_seed = <randomNumber>
+&end
+
+&run_control
+        n_steps =<seed>,
+        reset_rf_for_each_step = 0,
+		first_is_fiducial= 1
+&end
+
+&error_control 
+	error_log = %s.erl 
+	no_errors_for_first_step= 0
+&end
+
+! Quad misalignment		
+&error_element name = Q*, item=DX, amplitude=300e-6 , cutoff=3, bind=0 &end
+&error_element name = Q*, item=DY, amplitude=300e-6 , cutoff=3, bind=0 &end
+
+! Quad tilt	
+&error_element
+        name = Q*, item=tilt, amplitude=300e-6, cutoff=3, bind=0 &end
+&error_element
+        name = Q*, item=tilt, amplitude=300e-6, cutoff=3, bind=0 &end
+
+! BPM misalignment		
+&error_element
+        name = M1, item=DX, amplitude=200e-6, cutoff=3, bind=0 &end
+&error_element
+        name = M1, item=DY, amplitude=200e-6, cutoff=3, bind=0 &end
+
+&twiss_output
+    filename = %s.twi
+    matched = 0,  
+    output_at_each_step=0, 
+	beta_x = 16.3093  
+	beta_y = 4.06314
+&end
+
+!Apply global correction
+&correct
+        mode = trajectory, 
+		method = global,
+        n_xy_cycles = 1
+        n_iterations = 1
+        trajectory_output = %s.traj
+        corrector_output = %s.cor
+		!bpm_noise[0] = 200e-6, 200e-6,
+		!bpm_noise_cutoff[0] = 3,3
+		!bpm_noise_distribution[0]="gaussian","gaussian"
+&end
+
+&correction_matrix_output
+        response[0] = %s.hrm, %s.vrm
+        inverse[0] = %s.hirm, %s.virm
+&end
+
+&matrix_output
+    SDDS_output = %s.mat
+    SDDS_output_order = 2
+&end
+
+&bunched_beam
+        n_particles_per_bunch = 1
+&end
+
+&track &end

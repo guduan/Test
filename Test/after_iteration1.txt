@@ -1,0 +1,22 @@
+#!/bin/bash -f
+set nonomatch
+
+sddsprocess -pipe=out test.erl  -match=col,ElementParameter=DX -match=col,ElementType=QUAD \
+	| sddsconvert -pipe -retain=col,ElementParameter,ElementName,ElementOccurence -delete=parameter,* \
+	| sddsxref -pipe qoffset_new1.sdds -take=ParameterValue  \
+	| sddsxref -pipe=in test.quadlocation -take=s qoffset_new_after_1st.sdds
+
+sddsprocess -pipe=out test.erl  -match=col,ElementParameter=DX -match=col,ElementType=MONI \
+	| sddsconvert -pipe -retain=col,ElementParameter,ElementName,ElementOccurence -delete=parameter,* \
+	| sddsxref -pipe bpmoffset_new1.sdds -take=ParameterValue  \
+	| sddsxref -pipe=in test.bpmlocation -take=s bpmoffset_new_after_1st.sdds
+
+#put new quad/bpmoffset into lattice to check the orbit and dispersion
+elegant test2.ele
+
+sddsplot -graph=line,vary \
+	-col=s,x  test.traj  -fromPage=1 -toPage=1 -legend=spec=orbit_before_1st_DFS \
+	-col=s,Cx test2.cen -fromPage=5 -toPage=5 -legend=spec=orbit_after_1st_DFS
+
+./measure_dispersion.txt test0 BEFORE_DFS	
+./measure_dispersion.txt test2 AFTER_1st_DFS

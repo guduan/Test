@@ -1,0 +1,42 @@
+#!/bin/csh -f 
+set nonomatch
+
+set seedNumber=5
+
+set aa=1
+while($aa <= $seedNumber )
+sddsprocess -pipe=out scan2-$aa.cen -match=col,ElementType=MONI \
+	-filter=col,ElementOccurence,10,10 \
+	| sddsconvert -pipe  -retain=col,Cx \
+	| sddscombine -pipe -merge \
+	| sddsxref -pipe=in scan.sdds scan2-$aa.dp -take=dp
+sddsconvert -ascii scan2-$aa.dp -nowarnings
+sddspfit scan2-$aa.dp scan2-$aa.fit2 -terms=2 -col=dp,Cx -copyParameters 
+sddspfit scan2-$aa.dp scan2-$aa.fit3 -terms=3 -col=dp,Cx -copyParameters
+sddsconvert -ascii scan2-$aa.fit2 scan2-$aa.coeff2 -delete=col,* \
+    -retain=parameter,Coeff* -delete=arrays,*  
+sddsconvert -ascii scan2-$aa.fit3 scan2-$aa.coeff3 -delete=col,* \
+    -retain=parameter,Coeff* -delete=arrays,*
+sddscollapse  scan2-$aa.coeff3  scan2-$aa.coeff31
+sddscollapse  scan2-$aa.coeff2  scan2-$aa.coeff21
+echo $aa "in" $seedNumber "is done"
+@ aa++
+end	
+
+#derive the coeffcients and combine
+sddscombine -pipe=out scan2-*.coeff21  -merge -overWrite \
+	| sddsconvert -pipe=in -ascii  -delete=col,PageNumber  \
+	-renames=col,Coefficient00=CoefficientFirst00 \
+	-renames=col,Coefficient01=CoefficientFirst01 \
+	scan2.allcoeff21 -nowarnings 
+
+sddscombine -pipe=out scan2-*.coeff31  -merge -overWrite \
+	| sddsconvert -pipe=in -ascii  -delete=col,PageNumber \
+	-renames=col,Coefficient00=CoefficientSecond00 \
+	-renames=col,Coefficient01=CoefficientSecond01 \
+	-renames=col,Coefficient02=CoefficientSecond02 \
+	 scan2.allcoeff31 -nowarnings
+	 
+sddsxref  scan2.allcoeff21 scan2.allcoeff31 scan2.coeffall -take=Coeff*
+
+echo "BPM Dispersion Coefficients analysis Done"

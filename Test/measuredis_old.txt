@@ -1,0 +1,45 @@
+#!/bin/csh -f
+set nonomatch
+
+
+	sddsprocess scan2-1.cen scan2-1.cen1 -match=col,ElementType=MONI
+	
+	sddsconvert -pipe=out scan2-1.cen1 -retain=col,Cx -ascii \
+	| sddstranspose -pipe=in -ascii scan2-1.temp
+
+	sddsxref scan2-1.temp scan2-1.fin scan2-1.tempdp \
+	-leave=* -transfer=parameter,MALIN.DP -rename=parameter,MALIN.DP=dp
+	
+sddsprocess -pipe=out scan2-1.tempdp -print=column,Rootname,%s,OldColumnNames \
+	| sddsvslopes -pipe -independentVariable=dp -col=Col* \
+	| sddsconvert -pipe -retain=col,*Slope -ascii \
+	| sddstranspose -pipe -ascii \
+	| sddsxref -pipe=in  scan2-1.cen1 -take=s scan2-1.vslopes 
+
+	sddsconvert scan2-1.vslopes  -rename=col,Column=Dispersion -nowarnings
+
+
+
+#set aa=1
+#while($aa<2)
+#	sddsprocess scan2-$aa.cen scan2-$aa.cen1 -match=col,ElementType=MONI
+#	
+#	sddsconvert -pipe=out scan2-$aa.cen1 -retain=col,Cx -ascii \
+#	| sddstranspose -pipe -ascii \
+#	| sddsxref -pipe scan2-$aa.fin \
+#	-leave=* -transfer=parameter,MALIN.DP -rename=parameter,MALIN.DP=dp \
+#	| sddsprocess -pipe -print=column,Rootname,%s,OldColumnNames \
+#	| sddsvslopes -pipe -independentVariable=dp -col=Col* \
+#	| sddsconvert -pipe -retain=col,*Slope -ascii \
+#	| sddstranspose -pipe -ascii \
+#	| sddsxref -pipe=in  scan2-$aa.cen1 -take=s scan2-$aa.vslopes 
+#
+#	sddsconvert scan2-$aa.vslopes  -rename=col,Column=Dispersion -nowarnings
+#	
+#	set aa = `rpnl $aa 1 +`
+#end
+
+#sddsplot -col=s,Dispersion scan2-$aa.vslopes -graph=sym  \
+#-col=s,Dispersion scan2-$aa.vslopes -graph=line,type=1 -legend=spec="Meaused Dispersion" \
+#-yLabel="Dx (m)" -xLabel=m \
+#-title="Measured Dispersion"

@@ -1,0 +1,60 @@
+&run_setup
+        lattice = fodo.lte,
+        use_beamline =test
+        final = %s.fin,
+		output = %s.out,
+        centroid = %s.cen,
+        p_central_mev= 1000,
+		magnets=%s.mag
+		parameters = %s.param
+		always_change_p0 =1
+&end
+
+&load_parameters
+    filename = qoffset_new_after_2nd.sdds
+	change_defined_values = 1
+    force_occurence_data=1
+&end
+
+&load_parameters
+    filename = bpmoffset_new_after_2nd.sdds
+	change_defined_values = 1
+    force_occurence_data=1
+&end
+
+&run_control
+        n_indices = 1,
+        reset_rf_for_each_step = 0,
+		first_is_fiducial= 1 !necessory when dispersion scan ,need to establish one fiducial orbit
+&end
+
+&vary_element 
+    name=malin, 
+    item=dp, 
+	index_number=0,
+	index_limit=9,
+	enumeration_file =scan.sdds, 
+	enumeration_column = dp
+&end
+
+&twiss_output
+    filename = %s.twi
+    matched = 0,  
+    output_at_each_step=0, 
+	beta_x = 16.3093  
+	beta_y = 4.06314
+&end
+
+&matrix_output
+	printout=%s.mpr
+    SDDS_output = %s.mat
+    SDDS_output_order = 1
+	individual_matrices=1
+	output_at_each_step=1
+&end
+
+&bunched_beam
+        n_particles_per_bunch = 1
+&end
+
+&track &end

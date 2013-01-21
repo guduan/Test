@@ -1,0 +1,61 @@
+#!/bin/csh -f
+set nonomatch
+
+# change All K values to 0.8*K and 0.6*K
+elegant test1.ele
+elegant test11.ele
+
+sddsconvert -ascii test.mat -nowarnings
+sddsconvert -ascii test1.mat -nowarnings
+sddsconvert -ascii test11.mat -nowarnings
+
+## only use for ORM calculation
+sddsconvert -ascii test.hrm -nowarnings
+sddsconvert -ascii test1.hrm -nowarnings
+sddsconvert -ascii test11.hrm -nowarnings
+
+# sort Transport Matrice for Matlab loading
+sddsconvert -pipe=out -ascii test.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+    | sddsprintout -pipe=in -col=* -width=9999 test.mat1
+sddsconvert -pipe=out -ascii test1.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test1.mat1
+sddsconvert -pipe=out -ascii test11.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test11.mat1
+
+# find the real Quad offsets settings(test.realquadoffset should be test1.realquadoffset)
+sddsprocess -pipe=out test.erl -match=col,ElementType=QUAD  -match=col,ElementParameter=DX \
+	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test.realquadoffset
+#sddsprocess -pipe=out test1.erl  -match=col,ElementType=QUAD -match=col,ElementParameter=DX \
+#	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test1.realquadoffset
+#sddsprocess -pipe=out test11.erl  -match=col,ElementType=QUAD -match=col,ElementParameter=DX \
+#	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test11.realquadoffset
+	
+# find the real BPM offsets settings(test.realbpmoffset should be equal to test.realbpmoffset)
+sddsprocess -pipe=out test.erl -match=col,ElementType=MONI  -match=col,ElementParameter=DX \
+	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test.realbpmoffset
+#sddsprocess -pipe=out test1.erl  -match=col,ElementType=MONI -match=col,ElementParameter=DX \
+#	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test1.realbpmoffset
+#sddsprocess -pipe=out test11.erl  -match=col,ElementType=MONI -match=col,ElementParameter=DX \
+#	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test11.realbpmoffset
+
+# find the measured BPM readings and difference between two orbit, then output difforbit.
+sddsprocess -pipe=out test.cen -match=col,ElementType=MONI  \
+	| sddsconvert -pipe=in -ascii -retain=col,s,Cx -fromPage=1 -toPage=1 test.cx
+sddsprocess -pipe=out test1.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,Cx -reName=col,Cx=Cx1 -fromPage=1 -toPage=1 test1.cx
+sddsprocess -pipe=out test11.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,Cx -reName=col,Cx=Cx2 -fromPage=1 -toPage=1 test11.cx
+
+#sddsxref -pipe=out test.cx test1.cx -take=Cx1 \
+#	| sddsprocess -pipe=in test.twox -define=col,difforbit,"Cx Cx1 -"
+
+sddsprintout  test.cx -col=Cx -width=9999 test.orbit
+sddsprintout  test1.cx -col=Cx1 -width=9999 test1.orbit
+sddsprintout  test11.cx -col=Cx2 -width=9999 test11.orbit
+#sddsprintout  test.twox -col=difforbit -width=9999 test.difforbit
+
+
+## only use for ORM fitting
+#sddsprintout  test.cx -col=Cx -width=9999 test.realorbit
+#sddsconvert -pipe=out -ascii -retain=col,Kick test.cor -fromPage=1 -toPage=1 \
+#	| sddsprintout  -pipe=in -col=Kick -width=9999 test.cor1

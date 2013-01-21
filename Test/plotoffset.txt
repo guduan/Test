@@ -1,0 +1,28 @@
+#!/bin/csh -f
+set nonomatch
+
+elegant test00.ele
+
+sddsprocess  -pipe=out test00.param -match=col,ElementType=QUAD -match=col,ElementParameter=DX \
+	| sddsconvert -pipe=in -ascii -delete=col,ElementGroup,DX -rename=col,ParameterValue=DX  test00.quadoffset.real
+
+sddsprocess  -pipe=out test00.param -match=col,ElementType=MONI -match=col,ElementParameter=DX \
+	| sddsconvert -pipe=in -ascii -delete=col,ElementGroup,DX -rename=col,ParameterValue=DX  test00.bpmoffset.real
+	
+sddsprocess  -pipe=out test00.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,s -fromPage=1 -toPage=1 test00.bpmlocation
+	
+sddsprocess  -pipe=out test00.cen -match=col,ElementType=QUAD\
+	| sddsconvert -pipe=in -ascii -retain=col,s -fromPage=1 -toPage=1 test00.quadlocation
+	
+sddsxref  test00.bpmoffset.real  test00.bpmlocation test00.bpmoffset.real1 -take=s
+sddsxref  test00.quadoffset.real  test00.quadlocation test00.quadoffset.real1 -take=s
+
+sddsplot -col=s,DX test00.bpmoffset.real1 -graph=sym,type=1,subtype=1,connect -legend=spec=BPM_OFFSET  \
+	-col=s,DX test00.quadoffset.real1 -graph=sym,type=2,subtype=2,connect=1 -legend=spec=QUAD_OFFSET \
+	-col=s,Cx test0.cen2 -graph=line,vary -split=page
+	
+
+	
+	
+	

@@ -1,0 +1,24 @@
+#!/bin/bash  
+
+sddsmakedataset scan.sdds \
+    -column=dp,type=double,symbol='$gd' -data=-4e-3,-3e-3,-2e-3,-1e-3,0,1e-3,2e-3,3e-3,4e-3 -ascii
+
+elegant scan.ele 
+
+sddsprocess -pipe=out scan.cen -match=col,ElementType=MONI \
+	-filter=col,ElementOccurence,10,10 \
+	| sddsconvert -pipe  -retain=col,Cx \
+	| sddscombine -pipe -merge \
+	| sddsxref -pipe=in scan.sdds scan.dp -take=dp
+	
+sddsconvert -ascii scan.dp -nowarnings
+
+sddspfit scan.dp scan.fit2 -terms=2 -col=dp,Cx -copyParameters 
+sddspfit scan.dp scan.fit3 -terms=3 -col=dp,Cx -copyParameters
+
+sddsplot -col=dp,Cx scan.dp -graph=sym -legend=spec=MeausedDispersion \
+	-col=dp,CxFit scan.fit2 -graph=line,type=1 -legend=spec="1st order Fit" \
+	-col=dp,CxFit scan.fit3 -graph=line,type=6 -legend=spec="2nd order Fit" \
+	-topline=@sddspfitLabel -yLabel="Measured Orbit" -xLabel='$gd'
+	
+	

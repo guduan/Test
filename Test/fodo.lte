@@ -1,0 +1,39 @@
+q1h: quad,l=0.25,k1=1
+q2h: quad,l=0.25,k1=-1
+q3h: quad,l=0.25,k1=1
+q4h: quad,l=0.25,k1=-1
+q5h: quad,l=0.25,k1=1
+q6h: quad,l=0.25,k1=-1
+q7h: quad,l=0.25,k1=1
+q8h: quad,l=0.25,k1=-1
+q9h: quad,l=0.25,k1=1
+q10h: quad,l=0.25,k1=-1
+q11h: quad,l=0.25,k1=1
+q12h: quad,l=0.25,k1=-1
+q13h: quad,l=0.25,k1=1
+q14h: quad,l=0.25,k1=-1
+q15h: quad,l=0.25,k1=1
+q16h: quad,l=0.25,k1=-1
+q17h: quad,l=0.25,k1=1
+q18h: quad,l=0.25,k1=-1
+q19h: quad,l=0.25,k1=1
+q20h: quad,l=0.25,k1=-1
+
+d1: drift,l=1
+m1: moni
+hv: kick,l=1e-12
+malin:malign
+bl: line=(malin,10*(q1h,hv,d1,d1,m1,q2h,q2h,hv,d1,d1,m1,q1h))
+!bl: line=(10*(q1h,hv,d1,d1,m1,q2h,q2h,hv,d1,d1,m1,q1h))
+
+test:line=(  malin,&
+					2*d1,q1h,hv,d1,m1,q2h,hv,d1,m1,q3h,hv,d1,m1,q4h,hv,d1,m1,&
+					2*d1,q5h,hv,d1,m1,q6h,hv,d1,m1,q7h,hv,d1,m1,q8h,hv,d1,m1,&
+					2*d1,q9h,hv,d1,m1,q10h,hv,d1,m1,q11h,hv,d1,m1,q12h,hv,d1,m1,&
+					2*d1,q13h,hv,d1,m1,q14h,hv,d1,m1,q15h,hv,d1,m1,q16h,hv,d1,m1,&
+					2*d1,q17h,hv,d1,m1,q18h,hv,d1,m1,q19h,hv,d1,m1,q20h,hv,d1,m1)
+
+					
+					
+					
+					

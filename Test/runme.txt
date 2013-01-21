@@ -1,0 +1,26 @@
+﻿#!/bin/csh -f
+set nonomatch
+
+sddsmakedataset scan.sdds \
+    -column=dp,type=double,symbol='$gd' -data=-4e-3,-3e-3,-2e-3,-1e-3,0,1e-3,2e-3,3e-3,4e-3 -ascii
+
+elegant scan.ele
+
+sddsprocess scan.cen scan.cen1 -match=col,ElementType=MONI
+
+sddsconvert -pipe=out scan.cen1 -retain=col,Cx -ascii \
+	| sddstranspose -pipe -ascii \
+	| sddsxref -pipe scan.fin \
+    -leave=* -transfer=parameter,MALIN.DP -rename=parameter,MALIN.DP=dp \
+	| sddsprocess -pipe -print=column,Rootname,%s,OldColumnNames \
+	| sddsvslopes -pipe -independentVariable=dp -col=Col* \
+	| sddsconvert -pipe -retain=col,*Slope -ascii \
+	| sddstranspose -pipe -ascii \
+	| sddsxref -pipe=in  scan.cen1 -take=s scan.vslopes 
+
+sddsconvert scan.vslopes -rename=col,Column=Dispersion -nowarnings
+
+sddsplot -col=s,Dispersion scan.vslopes -graph=sym  \
+    -col=s,Dispersion scan.vslopes -graph=line,type=1 -legend=spec="Meaused Dispersion" \
+    -yLabel="Dx (m)" -xLabel=m \
+    -title="Measured Dispersion" 

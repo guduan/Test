@@ -1,0 +1,23 @@
+#!/bin/csh -f 
+set nonomatch
+
+# Make histograms of the timing and energy jitter
+
+sddsprocess scan2.coeffall -pipe=out \
+	-process=CoefficientFirst00,rms,rmsCoefficientFirst00  \
+	-process=CoefficientFirst01,rms,rmsCoefficientFirst01 \
+	-process=CoefficientSecond00,rms,rmsCoefficientSecond00 \
+	-process=CoefficientSecond01,rms,rmsCoefficientSecond01  \
+	-process=CoefficientSecond02,rms,rmsCoefficientSecond02  \
+	| sddsmultihist  -pipe=in -col=Coefficient* -bins=20 -sep scan2.coeffall.hist
+
+sddsconvert -ascii scan2.coeffall.hist -nowarnings
+
+sddsplot  -layout=1,2 scan2.coeffall.hist \
+	 -col=CoefficientFirst00,CoefficientFirst00Frequency scan2.coeffall.hist -graph=bar -title=@rmsCoefficientFirst00 -separate\
+	 -col=CoefficientFirst01,CoefficientFirst01Frequency scan2.coeffall.hist -graph=bar -title=@rmsCoefficientFirst01 -separate &
+	
+sddsplot  -layout=1,3 scan2.coeffall.hist \
+	 -col=CoefficientSecond00,CoefficientSecond00Frequency scan2.coeffall.hist -graph=bar -title=@rmsCoefficientSecond00 -separate\
+	 -col=CoefficientSecond01,CoefficientSecond01Frequency scan2.coeffall.hist -graph=bar -title=@rmsCoefficientSecond01 -separate \
+	 -col=CoefficientSecond02,CoefficientSecond02Frequency scan2.coeffall.hist -graph=bar -title=@rmsCoefficientSecond02 -separate &

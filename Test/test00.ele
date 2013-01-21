@@ -1,0 +1,55 @@
+&run_setup
+        lattice = fodo.lte,
+        use_beamline =test
+        final = %s.fin,
+		output = %s.out,
+        centroid = %s.cen,
+        p_central_mev= 1000,
+		magnets=%s.mag
+		parameters = %s.param
+		always_change_p0 =1
+&end
+
+&run_control
+        n_steps = 1
+        reset_rf_for_each_step = 0,
+		first_is_fiducial=0
+&end
+
+&error_control 
+	error_log = %s.erl 
+&end
+
+&error_control 
+	summarize_error_settings=1
+&end
+
+! Quad misalignment		
+&error_element name=Q* element_type=QUAD item=DX amplitude=200e-6 cutoff=3 bind=0 &end
+&error_element name=Q* element_type=QUAD item=DY amplitude=200e-6 cutoff=3 bind=0 &end
+
+! BPM misalignment		
+&error_element name=m1 element_type=MONI item=DX amplitude=200e-6 cutoff=3 bind=0 &end
+&error_element name=m1 element_type=MONI item=DY amplitude=200e-6 cutoff=3 bind=0 &end
+
+&twiss_output
+    filename = %s.twi
+    matched = 0,  
+    output_at_each_step=0, 
+	beta_x = 16.3093  
+	beta_y = 4.06314
+&end
+
+&matrix_output
+	printout=%s.mpr
+    SDDS_output = %s.mat
+    SDDS_output_order = 1
+	individual_matrices=1
+	output_at_each_step=1
+&end
+
+&bunched_beam
+        n_particles_per_bunch = 1
+&end
+
+&track &end

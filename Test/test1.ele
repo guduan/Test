@@ -1,0 +1,71 @@
+&run_setup
+        lattice = fodo.lte,
+        use_beamline =test
+        final = %s.fin,
+		output = %s.out,
+        centroid = %s.cen,
+        p_central_mev = 800,
+		magnets=%s.mag
+		parameters = %s.param
+		always_change_p0 =1
+&end
+
+&load_parameters
+    filename = quad_K1_800MeV.sdds
+	change_defined_values = 1
+	force_occurence_data=1
+&end
+
+&load_parameters
+    filename = test.erl
+	change_defined_values = 1
+    force_occurence_data=1
+&end
+
+&run_control
+        n_steps = 1
+        reset_rf_for_each_step = 0,
+		first_is_fiducial=0
+&end
+
+&twiss_output
+    filename = %s.twi
+    matched = 0,  
+    output_at_each_step=0, 
+	beta_x = 16.3093  
+	beta_y = 4.06314
+&end
+
+
+!Apply global correction
+&correct
+        mode = trajectory, 
+		method = global,
+        n_xy_cycles = 1
+        n_iterations = 1
+        trajectory_output = %s.traj
+        corrector_output = %s.cor
+		track_before_and_after=1
+&end
+
+&correction_matrix_output
+        response[0] = %s.hrm, %s.vrm
+        inverse[0] = %s.hirm, %s.virm
+		output_at_each_step=1
+		output_before_tune_correction=1
+		!use_response_from_computed_orbits=1
+&end
+
+&matrix_output
+	printout=%s.mpr
+    SDDS_output = %s.mat
+    SDDS_output_order = 1
+	individual_matrices=1
+	output_at_each_step=1
+&end
+
+&bunched_beam
+        n_particles_per_bunch = 1
+&end
+
+&track &end

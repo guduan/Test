@@ -1,0 +1,37 @@
+#!/bin/csh -f
+set nonomatch
+
+elegant test.ele
+elegant test1.ele
+sddsconvert -ascii test.mat -nowarnings
+sddsconvert -ascii test.hrm -nowarnings
+
+sddsconvert -ascii test1.mat -nowarnings
+sddsconvert -ascii test1.hrm -nowarnings
+
+sddsconvert -pipe=out -ascii test.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test.mat1
+sddsconvert -pipe=out -ascii test1.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test1.mat1
+
+# find the real Quad offsets settings
+sddsprocess -pipe=out test.erl  -match=col,ElementParameter=DX \
+	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test.erl1	
+sddsprocess -pipe=out test1.erl  -match=col,ElementParameter=DX \
+	| sddsprintout -pipe=in -col=ParameterValue -width=9999 test1.erl1	
+    
+# find the measured BPM readings
+sddsprocess -pipe=out test.cen -match=col,ElementType=MONI  \
+	| sddsconvert -pipe=in -ascii -retain=col,s,Cx -fromPage=1 -toPage=1 test.cx
+sddsprocess -pipe=out test1.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,Cx -reName=col,Cx=Cx1 test1.cx
+
+sddsxref -pipe=out test.cx test1.cx -take=Cx1 \
+	| sddsprocess -pipe=in test.twox -define=col,difforbit,"Cx Cx1 -"
+
+sddsprintout  test.twox -col=difforbit -width=9999 test.difforbit
+
+sddsprintout  test.cx -col=Cx -width=9999 test.realorbit
+sddsconvert -pipe=out -ascii -retain=col,Kick test.cor -fromPage=1 -toPage=1 \
+	| sddsprintout  -pipe=in -col=Kick -width=9999 test.cor1
+

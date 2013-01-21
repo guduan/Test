@@ -1,0 +1,64 @@
+&run_setup
+        lattice = fodo.lte,
+        use_beamline = bl,
+        final = %s.fin,
+        centroid = %s.cen,
+        p_central = 880,
+		magnets=%s.mag
+		always_change_p0 =1
+&end
+
+&run_control
+        n_indices = 1,
+        reset_rf_for_each_step = 0,
+		first_is_fiducial= 1 !necessory when dispersion scan ,need to establish one fiducial orbit
+&end
+
+&vary_element 
+    name=malin, 
+    item=dp, 
+	index_number=0,
+	index_limit=9,
+	enumeration_file = scan.sdds, 
+	enumeration_column = dp
+&end
+
+&error_control 
+	error_log = %s.erl 
+	no_errors_for_first_step= 1
+&end
+
+! Quad misalignment		
+&error_element name = Q*, item=DX, amplitude=300e-6, cutoff=3, bind=0 &end
+&error_element name = Q*, item=DY, amplitude=300e-6, cutoff=3, bind=0 &end
+
+!! Quad tilt	
+!&error_element
+!        name = Q*, item=tilt, amplitude=300e-6, cutoff=3, bind_number=0 &end
+!&error_element
+!        name = Q*, item=tilt, amplitude=300e-6, cutoff=3, bind_number=0 &end
+
+!! BPM misalignment		
+!&error_element
+!        name = M1, item=DX, amplitude=200e-6, cutoff=3, bind_number=0 &end
+!&error_element
+!        name = M1, item=DY, amplitude=200e-6, cutoff=3, bind_number=0 &end
+
+&twiss_output
+    filename = %s.twi
+    matched = 0,  
+    output_at_each_step=0, 
+	beta_x = 16.3093  
+	beta_y = 4.06314
+&end
+
+&matrix_output
+    SDDS_output = %s.mat
+    SDDS_output_order = 2
+&end
+
+&bunched_beam
+        n_particles_per_bunch = 1
+&end
+
+&track &end

@@ -1,0 +1,36 @@
+#!/bin/bash -f
+set nonomatch
+
+elegant test21.ele
+elegant test22.ele
+
+sddsconvert -ascii test21.mat -nowarnings
+sddsconvert -ascii test22.mat -nowarnings
+
+
+# sort Transport Matrice for Matlab loading
+sddsconvert -pipe=out -ascii test21.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test21.mat1
+sddsconvert -pipe=out -ascii test22.mat  -retain=col,s,ElementName,R* -fromPage=1 -toPage=1 \
+	| sddsprintout -pipe=in -col=* -width=9999 test22.mat1
+
+# find the real Quad offsets settings(test21.realquadoffset should be test22.realquadoffset)
+sddsprintout -col=ParameterValue qoffset_new1.sdds qoffset_new1.dat
+sddsprintout -col=ParameterValue bpmoffset_new1.sdds bpmoffset_new1.dat
+
+# find the measured BPM readings and difference between two orbit, then output difforbit.
+sddsprocess -pipe=out test21.cen -match=col,ElementType=MONI  \
+	| sddsconvert -pipe=in -ascii -retain=col,s,Cx -fromPage=1 -toPage=1 test21.cx
+sddsprocess -pipe=out test22.cen -match=col,ElementType=MONI \
+	| sddsconvert -pipe=in -ascii -retain=col,Cx -reName=col,Cx=Cx1 -fromPage=1 -toPage=1 test22.cx
+
+sddsxref -pipe=out test21.cx test22.cx -take=Cx1 \
+	| sddsprocess -pipe=in test21.twox -define=col,difforbit,"Cx Cx1 -"
+
+sddsprintout  test21.cx -col=Cx -width=9999 test21.orbit
+sddsprintout  test22.cx -col=Cx1 -width=9999 test22.orbit
+sddsprintout  test21.twox -col=difforbit -width=9999 test21.difforbit
+
+sddsplot test21.twox -graph=line,vary \
+	-col=s,Cx  \
+	-col=s,Cx1
