@@ -1,6 +1,6 @@
 clc;clear all;
-elegant_file_root='E:\Test\';
-matlab_file_root='E:\dfs\';
+elegant_file_root='E:\gitHub\Test\Test\';
+matlab_file_root='E:\gitHub\Test\dfs\';
 
 cd (elegant_file_root);
 aa=['C:\cygwin\bin\mintty.exe ',[elegant_file_root 'iteration1.txt']];
