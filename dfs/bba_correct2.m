@@ -55,7 +55,7 @@ b3=a3.data;
     for i=1:nElement
      for j=1:6
          for k=1:6
-             Tmat3(j,k,i)=b2(i+1,(j-1)*6+k);
+             Tmat3(j,k,i)=b3(i+1,(j-1)*6+k);
          end
      end
   end
